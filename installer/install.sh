@@ -1,43 +1,53 @@
+#!/bin/bash
+
 version="1.3"
-clear
+
+check_command(){
+	if ! command -v $1 &> /dev/null
+	then
+	    echo $1 could not be found! Install it and try again.
+	    exit 1
+	fi
+}
+
 echo RaindropInstaller for v$version
-echo WARNING: Before running this installer, ensure python3 and pip are installed on your system. \ Press ENTER to continue...
-read
+
+echo Checking preinstall requirements...
+check_command python3
+check_command pip3
+
 echo Installing pip dependencies...
 pip3 install requests pyfiglet termcolor plotext
-clear
-echo Getting username
-usrname=$(whoami)
-echo finding home directory
-cd /home/$usrname/.local/share
-echo making raindrop app folder
+
+cd ~/.local/share
+
+echo Making raindrop app folder
 mkdir RaindropWeather
-echo entering raindrop app folder
+
+echo Entering raindrop app folder
 cd RaindropWeather
-echo getting logo
+
+echo Getting logo
 curl -o icon.png "https://raw.githubusercontent.com/metalfoxdev/Raindrop/main/assets/logo.png"
-clear
-echo getting main.py
+
+echo Getting main.py
 curl -o main.py "https://raw.githubusercontent.com/metalfoxdev/Raindrop/v$version/main.py"
-clear
-echo creating executable
-echo "python3 /home/$usrname/.local/share/RaindropWeather/main.py '\$@'" >> raindrop
-chmod u+x raindrop
-mv raindrop /home/$usrname/.local/bin/
-clear
+chmod +x main.py
+
+echo Linking to local bin
+ln -s ~/.local/share/RaindropWeather/main.py ~/.local/bin/raindrop
+
 echo writing desktop file
-echo "[Desktop Entry]" >> raindrop.desktop
-echo "Version=$version" >> raindrop.desktop
-echo "Name=Raindrop" >> raindrop.desktop
-echo "Comment=A slick and intuitive weather app for the Linux terminal" >> raindrop.desktop
-echo "Exec=python3 main.py" >> raindrop.desktop
-echo "Icon=/home/$usrname/.local/share/RaindropWeather/icon.png" >> raindrop.desktop
-echo "Path=/home/$usrname/.local/share/RaindropWeather" >> raindrop.desktop
-echo "Terminal=true" >> raindrop.desktop
-echo "Type=Application" >> raindrop.desktop
-echo "Categories=Utility;Application;" >> raindrop.desktop
-echo copying desktop file to applications
-mv "/home/$usrname/.local/share/RaindropWeather/raindrop.desktop" "/home/$usrname/.local/share/applications/raindrop.desktop"
-clear
-echo Installation complete! Press ENTER to exit the installer...
-read
+echo "
+[Desktop Entry]
+Version=$version
+Name=Raindrop
+Comment=A slick and intuitive weather app for the Linux terminal
+Exec=python3 main.py
+Icon=$(echo ~)/.local/share/RaindropWeather/icon.png
+Path=$(echo ~)/.local/share/RaindropWeather
+Terminal=true
+Type=Application
+Categories=Utility;Application;" >> ~/.local/share/applications/raindrop.desktop
+
+echo Installation complete! Type \"raindrop\" to run it!
